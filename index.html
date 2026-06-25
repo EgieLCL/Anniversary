@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Optimized for mobile screens to stop accidental finger zooming -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Question for You...</title>
+    <style>
+        /* Locks the page layout into place on smartphones */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffe6e6; /* Cute pink background */
+            font-family: 'Arial', sans-serif;
+            box-sizing: border-box;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Container holding all the falling elements */
+        #roses-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allows clicks to pass through to buttons */
+            z-index: 101; /* Higher z-index so they fall over the introduction curtain too */
+        }
+
+        /* Styling for each individual falling element */
+        .rose-petal {
+            position: absolute;
+            top: -50px;
+            pointer-events: none;
+            user-select: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(105vh) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+
+        /* Music overlay curtain setup to handle row split layout on desktop */
+        #music-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffe6e6;
+            display: flex;
+            flex-direction: row; /* Split left (text) and right (card fan) */
+            justify-content: center;
+            align-items: center;
+            gap: 80px; 
+            z-index: 100;
+            transition: opacity 0.5s ease;
+            box-sizing: border-box;
+            padding: 40px;
+        }
+
+        /* Wrapper for text elements on the first screen */
+        .intro-text-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 350px;
+        }
+
+        #music-screen h2 {
+            color: #cc0055;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        #start-btn {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            background-color: #cc0055;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Polaroid Photo Container - Hand of cards style setup */
+        .photo-frame-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 420px; 
+            height: 380px; 
+        }
+
+        .polaroid-frame {
+            background-color: white;
+            padding: 10px 10px 28px 10px; 
+            border-radius: 5px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, z-index 0s;
+            position: absolute; 
+            width: 190px; 
+            box-sizing: border-box;
+            transform-origin: center bottom; 
+        }
+
+        /* Card Fan Transformations */
+        .card-left {
+            transform: rotate(-18deg) translateX(-60px) translateY(15px);
+            z-index: 1;
+        }
+        .card-middle {
+            transform: rotate(0deg) translateY(-15px);
+            z-index: 2;
+        }
+        .card-right {
+            transform: rotate(18deg) translateX(60px) translateY(15px);
+            z-index: 3;
+        }
+
+        .polaroid-frame:hover {
+            transform: rotate(0deg) scale(1.15) translateY(-25px);
+            z-index: 10;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+        }
+
+        .polaroid-frame img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+
+        .polaroid-caption {
+            font-family: 'Georgia', serif;
+            color: #555;
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.9rem; 
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        /* Full Screen Wrapper for the Background Collage Layout */
+        .content-wrapper {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Central floating romantic menu card */
+        .central-asking-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(204, 0, 85, 0.15);
+            border: 2px solid #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+            max-width: 340px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .media-container {
+            width: 160px;
+            height: 160px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .media-container img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            object-fit: cover;
+        }
+
+        h1 {
+            color: #cc0055;
+            text-align: center;
+            margin: 0 0 25px 0;
+            font-size: 1.4rem; 
+            line-height: 1.4;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .button-container {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px; 
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        #yes-btn {
+            background-color: #4CAF50; 
+            color: white;
+        }
+
+        #no-btn {
+            background-color: #f44336; 
+            color: beige;
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* Ambient scattered collage pictures pinned to the background layout layer */
+        .collage-background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Let user touch right past background items */
+            z-index: 10;
+        }
+
+        .collage-photo {
+            position: absolute;
+            width: 175px; 
+            height: 150px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+/* 6 Scattered matrix locations on Desktop View */
+        .c-img1 { top: 8%; left: 16%; transform: rotate(-8deg); }
+.c-img2 { top: 10%; right: 16%; transform: rotate(12deg); }
+        .c-img3 { top: 40%; left: 6%; transform: rotate(6deg); }
+        .c-img4 { top: 40%; right: 4%; transform: rotate(-9deg); }
+        .c-img5 { bottom: 6%; left: 20%; transform: rotate(-12deg); }
+        .c-img6 { bottom: 10%; right: 24%; transform: rotate(10deg); }
+
+        /* Mobile Layout Adaptations */
+        @media (max-width: 768px) {
+            #music-screen {
+                flex-direction: column; 
+                gap: 20px;
+                overflow-y: auto;
+                justify-content: flex-start;
+                padding: 30px 20px;
+            }
+            #music-screen h2 {
+                font-size: 1.4rem;
+                margin-bottom: 5px;
+            }
+            .photo-frame-container {
+                width: 300px;
+                height: 250px;
+            }
+            .polaroid-frame {
+                width: 130px; 
+                padding: 6px 6px 18px 6px;
+            }
+            .card-left { transform: rotate(-16deg) translateX(-40px) translateY(8px); }
+            .card-middle { transform: rotate(0deg) translateY(-10px); }
+            .card-right { transform: rotate(16deg) translateX(40px) translateY(8px); }
+            
+            .polaroid-caption { font-size: 0.7rem; }
+
+            /* Mobile positions for 6 background photo blocks to avoid overlapping the center card */
+            .collage-photo {
+                width: 85px;
+                height: 85px;
+                border: 3px solid white;
+            }
+            .c-img1 { top: 4%; left: 4%; }
+            .c-img2 { top: 4%; right: 4%; }
+            .c-img3 { top: 43%; left: 2%; }  
+            .c-img4 { top: 43%; right: 2%; }
+            .c-img5 { bottom: 4%; left: 4%; }
+            .c-img6 { bottom: 4%; right: 4%; }
+            
+            .central-asking-card {
+                max-width: 290px;
+                padding: 20px;
+            }
+            .media-container {
+                width: 135px;
+                height: 135px;
+                margin-bottom: 15px;
+            }
+            h1 {
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+            }
+        }
+
+        /* Success pop-up screen overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal h2 {
+            font-size: 1.8rem;
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+
+        .modal-media {
+            width: 220px;
+            height: 220px;
+            margin-bottom: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .modal-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal button {
+            position: static;
+            background-color: white;
+            color: #cc0055;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Container for falling elements -->
+    <div id="roses-container"></div>
+
+    <!-- Interaction screen featuring 3 Polaroid photos fanned out like cards -->
+    <div id="music-screen" onclick="playMusicImmediately()" ontouchstart="playMusicImmediately()">
+        <div class="intro-text-wrapper">
+            <h2>Hello Ms. Rinalyn Lagera!❤️</h2>
+            <h20><p style="text-align: center; font-size: 4; font-style: italic;">Click anywhere from the screen and feel free to listen to the song first then click the button once it's on the chorus. </p></h20>
+            <button id="start-btn" onclick="startExperience(event)">Click to open</button>
+        </div>
+
+        <!-- 3 Polaroid Photo Frames arranged like a hand of cards -->
+        <div class="photo-frame-container">
+            <div class="polaroid-frame card-left">
+                <img src="Rinalyn.jpg" alt="Us 1">
+                <div class="polaroid-caption">My First ❤️</div>
+            </div>
+            <div class="polaroid-frame card-middle">
+                <img src="Rinalyn2.jpg" alt="Us 2">
+                <div class="polaroid-caption">My Tababuy ❤️</div>
+            </div>
+            <div class="polaroid-frame card-right">
+                <img src="Rinalyn1.jpg" alt="Us 3">
+                <div class="polaroid-caption">My Love ❤️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Audio Element -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="palagi1.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Main Content Wrapper containing the Background Collage and Central Card -->
+    <div class="content-wrapper">
+        
+        <!-- Scattered Photo Collage (Now extended to 6 image positions) -->
+        <div class="collage-background-container">
+            <img src="slide1.jpg" alt="Memory 1" class="collage-photo c-img1">
+            <img src="slide2.jpg" alt="Memory 2" class="collage-photo c-img2">
+            <img src="slide3.jpg" alt="Memory 3" class="collage-photo c-img3">
+            <img src="slide4.jpg" alt="Memory 4" class="collage-photo c-img4">
+            <img src="slide5.jpg" alt="Memory 5" class="collage-photo c-img5">
+            <img src="slide6.jpg" alt="Memory 6" class="collage-photo c-img6">
+        </div>
+
+        <!-- Central floating romantic menu container -->
+        <div class="central-asking-card">
+            <div class="media-container">
+                <img id="main-gif" src="GIFforRina.gif" alt="Cute asking animation">
+            </div>
+            
+            <h1>Will you come to our 1st year anniversary?</h1>
+            
+            <div class="button-container">
+                <button id="yes-btn">Yes!</button>
+                <button id="no-btn" onmouseover="moveButton()" ontouchstart="moveButton(event)">No</button>
+            </div>
+        </div>
+    </div>
+<!-- Success Modal Pop-Up (Reverted to your original celebratory GIF style) -->
+    <div id="success-modal" class="modal">
+        <div class="modal-media">
+            <img src="happycat1.gif" alt="Celebration media">
+        </div>
+        <h2>See you my tababuy! This year marks the start of our PALAGI. I love you! ❤️</h2>
+        <button onclick="resetPage()">Close</button>
+    </div>
+
+    <script>
+        const music = document.getElementById('bg-music');
+        let musicStarted = false;
+
+        // Automatically triggers the falling hearts and roses effect as soon as the page loads
+        window.onload = function() {
+            startRosesEffect();
+        };
+
+        // Unlocks and plays audio on any interaction with the introductory card curtain
+        function playMusicImmediately() {
+            if (!musicStarted) {
+                music.play()
+                    .then(() => { musicStarted = true; })
+                    .catch(error => console.log("Silent autoplay blocked by browser:", error));
+            }
+        }
+
+        function startExperience(event) {
+            if(event) event.stopPropagation();
+            playMusicImmediately();
+
+            const screen = document.getElementById('music-screen');
+            screen.style.opacity = '0';
+            setTimeout(() => {
+                screen.style.display = 'none';
+            }, 500);
+        }
+
+        // Falling effect generator logic
+        function startRosesEffect() {
+            const container = document.getElementById('roses-container');
+            const loveIcons = ['❤️', '💖', '💝', '🌹', '🌸', '❤️']; 
+
+            setInterval(() => {
+                const petal = document.createElement('div');
+                petal.classList.add('rose-petal');
+                petal.innerText = loveIcons[Math.floor(Math.random() * loveIcons.length)];
+                
+                const size = Math.floor(Math.random() * 20) + 15;
+petal.style.fontSize = size + 'px';
+                petal.style.left = Math.random() * 100 + 'vw';
+                
+                const duration = Math.random() * 3 + 4; 
+                petal.style.animationDuration = duration + 's';
+
+                container.appendChild(petal);
+
+                setTimeout(() => {
+                    petal.remove();
+                }, duration * 1000);
+            }, 250); 
+        }
+
+        function moveButton(event) {
+            if (event) {
+                event.preventDefault();
+            }
+
+            const btn = document.getElementById('no-btn');
+            const padding = 25;
+            const maxX = window.innerWidth - btn.offsetWidth - padding;
+            const maxY = window.innerHeight - btn.offsetHeight - padding;
+
+            const newX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const newY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            btn.style.position = 'fixed';
+            btn.style.left = newX + 'px';
+            btn.style.top = newY + 'px';
+        }
+
+        // Explicit operational bindings linking event triggers and auto invitation parameters
+        document.getElementById("yes-btn").addEventListener("click", showSuccess);
+
+        function showSuccess() {
+            document.getElementById('success-modal').classList.add('active');
+
+            // NEW: Automatically pre-generates the invitation receipt detail card for her mail application
+            setTimeout(() => {
+                // 1. 👇 OPTIONAL: PUT YOUR ACTUAL EMAIL ADDRESS BELOW IF YOU WANT HER TO DISPATCH A RECEIPT TO YOU
+                const myEmailAddress = "egielcl007@gmail.com"; 
+                
+                // 2. 👇 ADJUST YOUR ANNIVERSARY DETAILS INSIDE THESE PRESET PARAMETERS
+                const dateOfCelebration = "June 29, 2026 🗓️"; 
+                const timeOfCelebration = "12:00 PM Manila Time ⏰";
+                const locationOfCelebration = "BGC, Taguig📍";
+
+                const subjectText = "Our 1st Anniversary Invitation Confirmed! ❤️";
+                const bodyText = `Hello my palagi! \n\nI just opened your website and clicked YES! \n\nHere are the details for our 1st Anniversary Celebration:\n━━━━━━━━━━━━━━━━━━━━━\n🗓️ Date: ${dateOfCelebration}\n⏰ Time: ${timeOfCelebration}\n📍 Location: ${locationOfCelebration}\n━━━━━━━━━━━━━━━━━━━━━\n\nThis year marks the start of our PALAGI. I love you so much! ❤️`;
+
+                const encodedSubject = encodeURIComponent(subjectText);
+                const encodedBody = encodeURIComponent(bodyText);
+                
+                // Launches her native device messaging workflow safely
+                window.location.href = `mailto:${myEmailAddress}?subject=${encodedSubject}&body=${encodedBody}`;
+            }, 1500); // Prompts 1.5 seconds after her confirmation so she views the popup text cards first
+        }
+
+        function resetPage() {
+            document.getElementById('success-modal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
